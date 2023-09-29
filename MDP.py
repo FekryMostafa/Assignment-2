@@ -5,23 +5,23 @@ from random import choices
 states = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J']
 terminal_state = 'J'
 initial_state = 'A'
-treasure_states = ['B', 'D', 'H']
+treasure_states = ['I', 'J', 'H']
 
 actions = ['move', 'dig']
 
 gamma = 0.9
 
 trans_prob = {
-    'A': {'A': 0.2, 'B': 0.8},
-    'B': {'B': 0.2, 'C': 0.8},
-    'C': {'C': 0.2, 'D': 0.8},
-    'D': {'D': 0.2, 'E': 0.8},
-    'E': {'E': 0.2, 'F': 0.8},
-    'F': {'F': 0.2, 'G': 0.8},
-    'G': {'G': 0.2, 'H': 0.8},
-    'H': {'H': 0.2, 'I': 0.8},
-    'I': {'I': 0.2, 'J': 0.8},
-    'J': {'J': 1}
+    'A': {'H': 0.2, 'C': 0.4, 'B': 0.4},
+    'B': {'C': 0.5, 'D': 0.5},
+    'C': {'G': 0.4, 'J': 0.2, 'F': 0.4},
+    'D': {'C': 0.2, 'E': 0.8},
+    'E': {'I': 1.0},
+    'F': {'E': 0.7, 'D': 0.3},
+    'G': {'I': 0.6, 'E': 0.4},
+    'H': {'G': 0.1, 'J': 0.9},
+    'I': {'H': 0.8, 'C': 0.2},
+    'J': {}  # terminal state
 }
 
 def get_reward(state, action, treasures_found):
@@ -39,6 +39,7 @@ class Agent:
     def __init__(self):
         self.state = initial_state
         self.treasures_found = 0
+        self.treasure_states = treasure_states.copy()
         self.total_reward = 0
         self.gamma = gamma
         self.history = []
@@ -57,9 +58,9 @@ class Agent:
         self.total_reward += reward * (self.gamma ** len(self.history))
         #print(f"Reward Received: {reward}, Total Reward: {self.total_reward}")  # Print reward information
 
-        if action == 'dig' and self.state in treasure_states:
+        if action == 'dig' and self.state in self.treasure_states:
             self.treasures_found += 1
-
+            self.treasure_states.remove(self.state)
         self.history.append((self.state, action, reward))
         return self.state, action, reward
 
@@ -77,6 +78,7 @@ def run_episode(agent, max_steps=25):
 
     print("Agent's History: ", agent.history)
     print(f"Cumulative Reward for Episode: {agent.total_reward}")
+    print(f"Number of Treasures Found: {agent.treasures_found}")  # Print the number of treasures found
     #print("Episode Ended.")  # Print episode end
     return agent.history, agent.total_reward
 
